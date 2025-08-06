@@ -1,6 +1,6 @@
 # CardViewer
 
-**A fast, modern desktop viewer for AI character cards (PNG-based). Instantly browse, search, preview, and manage thousands of character cards, with support for SFW/NSFW and advanced sorting.**
+**A simple viewer for AI character cards (PNG-based). Instantly browse, search, preview, and manage thousands of character cards, with support for SFW/NSFW and advanced sorting.**
 
 ---
 
@@ -13,7 +13,6 @@
 * **Smart search:** Find cards by name, creator, or tag.
 * **Drag & drop add:** Drop PNG files right into your folder.
 * **Right-click menu:** Open, export metadata, or “Save PNG As...” anywhere.
-* **Delete with safety:** Confirm before removing cards (with auto-refresh).
 * **Remembers your settings:** Theme, folder, search, window size—it's all saved.
 
 ---
