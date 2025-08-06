@@ -598,8 +598,11 @@ class CardViewer(QMainWindow):
         entry = self.cards_index[meta_idx]
         fname = entry['filename']
         fpath = os.path.join(self.folder, fname)
-        confirm = QMessageBox.question(self, "Delete Card", f"Delete '{fname}'?\nThis cannot be undone.",
-                                      QMessageBox.Yes | QMessageBox.No)
+        confirm = QMessageBox.question(
+            self, "Delete Card",
+            f"Delete '{fname}'?\nThis cannot be undone.",
+            QMessageBox.Yes | QMessageBox.No
+        )
         if confirm == QMessageBox.Yes:
             try:
                 os.remove(fpath)
@@ -607,23 +610,13 @@ class CardViewer(QMainWindow):
                 cache_file = os.path.join(self.folder, "cards.json")
                 with open(cache_file, "w", encoding="utf-8") as f:
                     json.dump(self.cards_index, f, ensure_ascii=False, indent=2)
-                self.listbox.takeItem(idx)
-                # Remove from index map, re-map for future deletes
-                self.file_index_map = {row: self.file_index_map[row] for row in self.file_index_map if row != idx}
-                new_map = {}
-                for row, index in self.file_index_map.items():
-                    if row > idx:
-                        new_map[row - 1] = index
-                    elif row < idx:
-                        new_map[row] = index
-                self.file_index_map = new_map
+                # Always fully refresh list and mappings after delete
+                self.update_listbox()
                 self.details.show_image(None)
                 self.details.show_metadata(None)
-                # Auto-select next valid card
-                self._fix_selection()
-                self.statusbar.showMessage(f"{len(self.cards_index)} card(s) | Mode: {'Sort by Name' if self.sort_mode == 'name' else 'Group by Creator'}")
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Could not delete file:\n{e}")
+
 
     # --- Drag & drop support ---
     def dragEnterEvent(self, event):
