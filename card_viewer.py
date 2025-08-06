@@ -433,6 +433,7 @@ class CardViewer(QMainWindow):
                         self._fix_selection(force=True)
                         return False
         return super().eventFilter(obj, event)
+        
     def select_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Open Card Folder")
         if not folder:
@@ -440,8 +441,7 @@ class CardViewer(QMainWindow):
         self.folder = folder
         self.folder_label.setText(folder)
         self.settings.setValue("last_folder", folder)
-        self.load_or_update_index
-        self.load_or_update_index_cache()
+        self.load_or_update_index_cache()   # <- correct call here!
         self.update_listbox()
 
     def refresh_folder(self):
