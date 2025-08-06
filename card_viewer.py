@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QEvent, QSettings
 from PySide6.QtGui import QPixmap, QPalette, QColor, QDesktopServices, QAction, QCursor
+__version__ = "1.3"
 
 def enable_dark_mode(app):
     dark_palette = QPalette()
@@ -211,6 +212,31 @@ QPushButton#DeleteCardBtn:hover {
 }
 """
 
+def apply_messagebox_dark(msgbox):
+    msgbox.setStyleSheet("""
+        QMessageBox {
+            background-color: #232629;
+            color: #fafbfc;
+        }
+        QLabel {
+            color: #fafbfc;
+        }
+        QPushButton {
+            background-color: #393f45;
+            color: #fafbfc;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 6px 10px;
+            min-width: 60px;
+        }
+        QPushButton:hover {
+            background-color: #355a7c;
+            color: #fff;
+        }
+    """)
+
+
+
 def get_creator_from_png(filepath):
     try:
         with PngImagePlugin.PngImageFile(filepath) as im:
@@ -318,7 +344,7 @@ class CardDetails(QWidget):
 class CardViewer(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Character Card Viewer")
+        self.setWindowTitle(f"Character Card Viewer v{__version__}")
         self.resize(900, 540)
         self.folder = ""
         self.cards_index = []
@@ -653,55 +679,117 @@ class CardViewer(QMainWindow):
     # --- Context menu on right click ---
     def show_context_menu(self, pos):
         idx = self.listbox.indexAt(pos).row()
+        # Always allow About, even when not on a card
+        menu = QMenu()
         if idx == -1 or idx not in self.file_index_map:
+            about_action = QAction("About", self)
+            def do_about():
+                msg = QMessageBox(self)
+                msg.setIcon(QMessageBox.Information)
+                msg.setWindowTitle("About")
+                msg.setText(f"Character Card Viewer\nVersion: {__version__}\n\ngithub.com/kaosnews/CardViewer")
+                if self.is_dark_mode:
+                    apply_messagebox_dark(msg)
+                msg.exec()
+            about_action.triggered.connect(do_about)
+            menu.addAction(about_action)
+            menu.exec(QCursor.pos())
             return
+
         meta_idx = self.file_index_map[idx]
         entry = self.cards_index[meta_idx]
         fname = entry['filename']
         fpath = os.path.join(self.folder, fname)
-        menu = QMenu()
+
         open_action = QAction("Open in Default Viewer", self)
         export_action = QAction("Export Metadata...", self)
         save_as_action = QAction("Save PNG As...", self)
+        about_action = QAction("About", self)
 
-        # --- Connect actions BEFORE menu.exec() ---
         def do_open():
             QDesktopServices.openUrl(f"file:///{os.path.abspath(fpath)}")
 
         def do_export():
             card, error = extract_card_metadata(fpath)
             if not card:
-                QMessageBox.warning(self, "Export", "No metadata found.")
+                msg = QMessageBox(self)
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Export")
+                msg.setText("No metadata found.")
+                if self.is_dark_mode:
+                    apply_messagebox_dark(msg)
+                msg.exec()
                 return
-            outname, _ = QFileDialog.getSaveFileName(self, "Export Metadata", fname.replace('.png', '.json'), "JSON Files (*.json);;Text Files (*.txt);;All Files (*)")
+            outname, _ = QFileDialog.getSaveFileName(
+                self, "Export Metadata",
+                fname.replace('.png', '.json'),
+                "JSON Files (*.json);;Text Files (*.txt);;All Files (*)"
+            )
             if outname:
                 try:
                     with open(outname, "w", encoding="utf-8") as f:
                         json.dump(card, f, ensure_ascii=False, indent=2)
-                    QMessageBox.information(self, "Export", f"Metadata exported to {outname}")
+                    msg = QMessageBox(self)
+                    msg.setIcon(QMessageBox.Information)
+                    msg.setWindowTitle("Export")
+                    msg.setText(f"Metadata exported to {outname}")
+                    if self.is_dark_mode:
+                        apply_messagebox_dark(msg)
+                    msg.exec()
                 except Exception as e:
-                    QMessageBox.warning(self, "Export Error", f"Failed to export: {e}")
+                    msg = QMessageBox(self)
+                    msg.setIcon(QMessageBox.Warning)
+                    msg.setWindowTitle("Export Error")
+                    msg.setText(f"Failed to export: {e}")
+                    if self.is_dark_mode:
+                        apply_messagebox_dark(msg)
+                    msg.exec()
 
         def do_save_as():
-            save_path, _ = QFileDialog.getSaveFileName(self, "Save PNG As", fname, "PNG Files (*.png)")
+            save_path, _ = QFileDialog.getSaveFileName(
+                self, "Save PNG As", fname, "PNG Files (*.png)"
+            )
             if save_path:
                 try:
                     shutil.copy2(fpath, save_path)
-                    QMessageBox.information(self, "Save PNG", f"Saved as: {save_path}")
+                    msg = QMessageBox(self)
+                    msg.setIcon(QMessageBox.Information)
+                    msg.setWindowTitle("Save PNG")
+                    msg.setText(f"Saved as: {save_path}")
+                    if self.is_dark_mode:
+                        apply_messagebox_dark(msg)
+                    msg.exec()
                 except Exception as e:
-                    QMessageBox.warning(self, "Error", f"Could not save file:\n{e}")
+                    msg = QMessageBox(self)
+                    msg.setIcon(QMessageBox.Warning)
+                    msg.setWindowTitle("Error")
+                    msg.setText(f"Could not save file:\n{e}")
+                    if self.is_dark_mode:
+                        apply_messagebox_dark(msg)
+                    msg.exec()
+
+        def do_about():
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Information)
+            msg.setWindowTitle("About")
+            msg.setText(f"Character Card Viewer\nVersion: {__version__}\n\ngithub.com/kaosnews/CardViewer")
+            if self.is_dark_mode:
+                apply_messagebox_dark(msg)
+            msg.exec()
 
         open_action.triggered.connect(do_open)
         export_action.triggered.connect(do_export)
         save_as_action.triggered.connect(do_save_as)
+        about_action.triggered.connect(do_about)
 
         menu.addAction(open_action)
         menu.addAction(export_action)
         menu.addAction(save_as_action)
+        menu.addSeparator()
+        menu.addAction(about_action)
 
         menu.exec(QCursor.pos())
-
-        
+     
         def do_save_as():
             idx = self.listbox.currentRow()
             if idx == -1 or idx not in self.file_index_map:

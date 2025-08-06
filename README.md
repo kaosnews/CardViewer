@@ -56,3 +56,39 @@ python card_viewer.py
 
 * Works with TavernAI and SillyTavern PNG character cards.
 * Extracts and displays embedded metadata (including non-standard fields).
+
+
+---
+
+## Changelog
+
+### v1.3 — *2025-08-06*
+
+* Added “Save PNG As...” to right-click menu
+* Improved dark/light mode switch, more consistent UI coloring
+* Context menu and dialogs now follow theme
+* DEL key support for quick delete
+* Performance tweaks for large folders
+* Version display and About dialog
+* Improved error handling
+* Numerous polish/UX tweaks
+
+### v1.2
+
+* Added creator sorting (grouped cards by creator)
+* Remembers last folder, theme, sort mode, and search
+* Card deletion now updates cache for instant response
+* Drag & drop card adding (from anywhere)
+* Improved metadata parsing
+
+### v1.1
+
+* Added light mode option
+* Fast search bar (search by name, creator, tag)
+* UI refinements and bug fixes
+
+### v1.0
+
+* Initial release: super-fast browsing, search, and preview for AI PNG cards
+* Supports SFW/NSFW cards, with instant metadata view
+
