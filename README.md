@@ -62,7 +62,11 @@ python card_viewer.py
 
 ## Changelog
 
-### v1.3 — *2025-08-06*
+### v1.4 
+
+* Added full tag search: You can now search for cards by tag from the main search bar. (Previously, only name and creator were supported.)
+
+### v1.3 
 
 * Added “Save PNG As...” to right-click menu
 * Improved dark/light mode switch, more consistent UI coloring

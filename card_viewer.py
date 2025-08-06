@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QEvent, QSettings
 from PySide6.QtGui import QPixmap, QPalette, QColor, QDesktopServices, QAction, QCursor
-__version__ = "1.3"
+__version__ = "1.4"
 
 def enable_dark_mode(app):
     dark_palette = QPalette()
@@ -266,6 +266,22 @@ def extract_card_metadata(filepath):
         return None, str(e)
     return None, "No character card metadata found"
 
+def get_tags_from_png(filepath):
+    try:
+        with PngImagePlugin.PngImageFile(filepath) as im:
+            text_chunks = im.text
+            b64 = text_chunks.get('chara') or text_chunks.get('ccv3')
+            if b64:
+                data = json.loads(base64.b64decode(b64).decode('utf-8'))
+                if "data" in data and isinstance(data["data"], dict):
+                    data = {**data, **data["data"]}
+                tags = data.get("tags", [])
+                return tags if isinstance(tags, list) else []
+    except Exception:
+        pass
+    return []
+
+
 def get_png_files(folder):
     return sorted([f for f in os.listdir(folder) if f.lower().endswith('.png')])
 
@@ -476,6 +492,8 @@ class CardViewer(QMainWindow):
         self.load_or_update_index_cache(force_refresh=True)
         self.update_listbox()
 
+
+
     def load_or_update_index_cache(self, force_refresh=False):
         pngs = get_png_files(self.folder)
         cache_file = os.path.join(self.folder, "cards.json")
@@ -494,14 +512,16 @@ class CardViewer(QMainWindow):
             fpath = os.path.join(self.folder, fname)
             mtime = int(os.path.getmtime(fpath))
             cached_entry = cached_lookup.get(fname)
-            if cached_entry and cached_entry['mtime'] == mtime:
+            if cached_entry and cached_entry['mtime'] == mtime and 'tags' in cached_entry:
                 new_cards_index.append(cached_entry)
             else:
                 creator = get_creator_from_png(fpath)
+                tags = get_tags_from_png(fpath)
                 new_cards_index.append({
                     "filename": fname,
                     "mtime": mtime,
-                    "creator": creator
+                    "creator": creator,
+                    "tags": tags
                 })
                 need_resave = True
         if len(new_cards_index) != len(cached):
@@ -523,25 +543,36 @@ class CardViewer(QMainWindow):
             for i, entry in enumerate(self.cards_index):
                 fname = entry['filename']
                 creator = entry.get('creator', 'Unknown')
-                if filter_text:
-                    meta_match = filter_text in fname.lower() or filter_text in creator.lower()
-                    if not meta_match:
-                        continue
+                tags = entry.get('tags', [])
+                # ------ Tag-aware filter! ------
+                meta_match = (
+                    filter_text in fname.lower()
+                    or filter_text in creator.lower()
+                    or any(filter_text in tag.lower() for tag in tags)
+                ) if filter_text else True
+                if not meta_match:
+                    continue
                 item = QListWidgetItem(fname)
                 item.setFlags(item.flags() | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
                 self.listbox.addItem(item)
                 self.file_index_map[self.listbox.count() - 1] = i
                 items_added += 1
         else:
+            # Group by creator
             creator_map = {}
             for i, entry in enumerate(self.cards_index):
                 creator = entry.get("creator", "Unknown") or "Unknown"
-                if filter_text:
-                    fname = entry['filename']
-                    meta_match = filter_text in fname.lower() or filter_text in creator.lower()
-                    if not meta_match:
-                        continue
-                creator_map.setdefault(creator, []).append((entry['filename'], i))
+                fname = entry['filename']
+                tags = entry.get('tags', [])
+                # ------ Tag-aware filter! ------
+                meta_match = (
+                    filter_text in fname.lower()
+                    or filter_text in creator.lower()
+                    or any(filter_text in tag.lower() for tag in tags)
+                ) if filter_text else True
+                if not meta_match:
+                    continue
+                creator_map.setdefault(creator, []).append((fname, i))
             for creator in sorted(creator_map, key=lambda s: s.lower()):
                 if not creator_map[creator]:
                     continue
@@ -561,6 +592,7 @@ class CardViewer(QMainWindow):
         # Auto-select first selectable item (skip headers)
         self._fix_selection()
         self.statusbar.showMessage(f"{items_added} card(s) | Mode: {'Sort by Name' if self.sort_mode == 'name' else 'Group by Creator'}")
+
 
     def _fix_selection(self, force=False):
         # Only keep selection on selectable items (not headers)
@@ -789,24 +821,6 @@ class CardViewer(QMainWindow):
         menu.addAction(about_action)
 
         menu.exec(QCursor.pos())
-     
-        def do_save_as():
-            idx = self.listbox.currentRow()
-            if idx == -1 or idx not in self.file_index_map:
-                return
-            meta_idx = self.file_index_map[idx]
-            entry = self.cards_index[meta_idx]
-            fname = entry['filename']
-            fpath = os.path.join(self.folder, fname)
-            save_path, _ = QFileDialog.getSaveFileName(self, "Save PNG As", fname, "PNG Files (*.png)")
-            if save_path:
-                try:
-                    shutil.copy2(fpath, save_path)
-                    QMessageBox.information(self, "Save PNG", f"Saved as: {save_path}")
-                except Exception as e:
-                    QMessageBox.warning(self, "Error", f"Could not save file:\n{e}")
-
-        save_as_action.triggered.connect(do_save_as)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
