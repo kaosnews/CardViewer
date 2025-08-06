@@ -13,7 +13,7 @@
 * **Smart search:** Find cards by name, creator, or tag.
 * **Drag & drop add:** Drop PNG files right into your folder.
 * **Right-click menu:** Open, export metadata, or “Save PNG As...” anywhere.
-* **Remembers your settings:** Theme, folder, search, window size—it's all saved.
+* **Remembers your settings:** Theme, folder, search, window size.
 
 ---
 
