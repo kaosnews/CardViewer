@@ -235,8 +235,6 @@ def apply_messagebox_dark(msgbox):
         }
     """)
 
-
-
 def get_creator_from_png(filepath):
     try:
         with PngImagePlugin.PngImageFile(filepath) as im:
@@ -310,6 +308,19 @@ class CardDetails(QWidget):
         layout.addWidget(self.delete_btn, alignment=Qt.AlignmentFlag.AlignLeft)
         self.setLayout(layout)
 
+    def show_info_message(self, text, error=False):
+        # Clear out all previous widgets
+        for i in reversed(range(self.meta_layout.count())):
+            widget = self.meta_layout.itemAt(i).widget()
+            if widget:
+                widget.setParent(None)
+        # Style: error gets red, info gets italic gray
+        color = "red" if error else "#888"
+        label = QLabel(f"<span style='color:{color}'><i>{text}</i></span>")
+        label.setWordWrap(True)
+        self.meta_layout.addWidget(label)
+        self.delete_btn.setEnabled(False)
+    
     def show_image(self, filepath):
         try:
             im = Image.open(filepath)
@@ -489,10 +500,12 @@ class CardViewer(QMainWindow):
     def refresh_folder(self):
         if not self.folder:
             return
+        self.statusbar.showMessage("Scanning cards and building cache...")
+        self.details.show_info_message("Scanning cards and building cache...")
+        QApplication.processEvents()
         self.load_or_update_index_cache(force_refresh=True)
         self.update_listbox()
-
-
+        self.statusbar.clearMessage()
 
     def load_or_update_index_cache(self, force_refresh=False):
         pngs = get_png_files(self.folder)
