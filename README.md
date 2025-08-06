@@ -29,7 +29,7 @@
 
 ```sh
 git clone https://github.com/kaosnews/CardViewer.git
-cd CardViewerDeluxe
+cd CardViewer
 ```
 
 ### **2. Install dependencies**
@@ -49,9 +49,6 @@ pip install PySide6 Pillow
 ```sh
 python card_viewer.py
 ```
-
-* The app works out-of-the-box—no model files or GPU needed.
-* Open your folder with PNG character cards and start browsing!
 
 ---
 
