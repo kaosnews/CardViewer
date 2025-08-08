@@ -1,19 +1,19 @@
 # CardViewer
 
-**A simple viewer for AI character cards (PNG-based). Instantly browse, search, preview, and manage thousands of character cards, with support for SFW/NSFW and advanced sorting.**
+**Check out your AI character cards (PNG files) the easy way. Flip through, search, preview, and manage thousands of cards in seconds, whether they’re SFW or NSFW. Sorting’s a breeze, too.**
 
 ---
 
 ## Features
 
-* **Lightning-fast loading:** Handles thousands of cards in a snap.
-* **PNG card preview:** See card images and metadata instantly.
-* **Dark & Light mode:** Switch themes any time.
-* **Sort by name or creator:** Toggle with one click.
-* **Smart search:** Find cards by name, creator, or tag.
-* **Drag & drop add:** Drop PNG files right into your folder.
-* **Right-click menu:** Open, export metadata, or “Save PNG As...” anywhere.
-* **Remembers your settings:** Theme, folder, search, window size.
+* Loads thousands of cards crazy fast.
+* Lets you see card images and info right away.
+* Comes with both dark and light themes—switch whenever you want.
+* Sort cards by name or creator, just one click.
+* Search by name, creator, or tag (super easy).
+* Add new cards by dragging PNGs straight into your folder.
+* Right-click anywhere to open cards, export info, or save the PNG.
+* Remembers your theme, folder, search, and window size for next time.
 
 ---
 
@@ -62,12 +62,23 @@ python card_viewer.py
 
 ## Changelog
 
-### v1.4 
+### v2.0
+* **Background scanning & cache** – PNGs are indexed in the background via `ScanWorker` on a `QThread`, and the cache is saved atomically to `cards.json` to avoid corruption
+* **Smarter index fields** – Each card now tracks `filename`, `mtime`, `creator`, and `tags`; quick rescans update only changed files
+* **Tag-aware search + new sort** – Search filters by name/creator/tags, and you can group by creator (with non-selectable headers)
+* **UI polish**
+  * Thumbnails are cached
+  * Details pane got collapsible sections (Alternate Greetings, Lorebook) and linkified text
+  * Horizontal scrollbars are disabled to keep layouts neat
+  * Better selection handling (skip headers), delete confirmation, and status bar info (file size)
+* **Context menu upgrades** – Added Duplicate Card, Export Metadata, and Save PNG As…
+* **Quality-of-life** – Drag-and-drop to add PNGs; remembers last folder, geometry, theme, search, sort, and splitter sizes
+* **Theme handling** – Light/Dark modes retained with tweaked styles; dark message boxes get a matching skin
 
-* Added full tag search: You can now search for cards by tag from the main search bar. (Previously, only name and creator were supported.)
+### v1.4
+* Added full tag search: You can now search for cards by tag from the main search bar (previously only name and creator were supported)
 
-### v1.3 
-
+### v1.3
 * Added “Save PNG As...” to right-click menu
 * Improved dark/light mode switch, more consistent UI coloring
 * Context menu and dialogs now follow theme
@@ -78,7 +89,6 @@ python card_viewer.py
 * Numerous polish/UX tweaks
 
 ### v1.2
-
 * Added creator sorting (grouped cards by creator)
 * Remembers last folder, theme, sort mode, and search
 * Card deletion now updates cache for instant response
@@ -86,13 +96,10 @@ python card_viewer.py
 * Improved metadata parsing
 
 ### v1.1
-
 * Added light mode option
 * Fast search bar (search by name, creator, tag)
 * UI refinements and bug fixes
 
 ### v1.0
-
 * Initial release: super-fast browsing, search, and preview for AI PNG cards
 * Supports SFW/NSFW cards, with instant metadata view
-
