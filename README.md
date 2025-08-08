@@ -68,7 +68,7 @@ python card_viewer.py
 * **Tag-aware search + new sort** – Search filters by name/creator/tags, and you can group by creator (with non-selectable headers)
 * **UI polish**
   * Thumbnails are cached
-  * Details pane got collapsible sections (Alternate Greetings, Lorebook) and linkified text
+  * Details pane got collapsible sections (Alternate Greetings) and linkified text
   * Horizontal scrollbars are disabled to keep layouts neat
   * Better selection handling (skip headers), delete confirmation, and status bar info (file size)
 * **Context menu upgrades** – Added Duplicate Card, Export Metadata, and Save PNG As…
